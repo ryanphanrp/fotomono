@@ -1,8 +1,53 @@
-# Ultracite Code Standards
+# AI Assistant Guidelines for fotomono
 
-This project uses **Ultracite**, a zero-config Biome preset that enforces strict code quality standards through automated formatting and linting.
+This is a **Better-T-Stack** monorepo using modern TypeScript tooling for full-stack development. The project follows strict code quality standards enforced by **Ultracite** (Biome preset).
 
-## Quick Reference
+## Tech Stack
+
+### Frontend
+- **Next.js 15** - React framework with App Router
+- **Tailwind CSS v4** - Utility-first CSS framework
+- **shadcn/ui** - Re-usable component library
+- **React Query** - Server state management and data fetching
+
+### Backend
+- **Hono** - Lightweight, performant web framework
+- **tRPC** - End-to-end type-safe APIs
+- **Better-Auth** - Modern authentication solution
+
+### Database & Storage
+- **Supabase (PostgreSQL)** - Hosted PostgreSQL database
+- **Prisma** - Type-safe ORM and database toolkit
+- **Upstash Redis** - Serverless Redis for caching
+- **Cloudflare R2** - S3-compatible object storage
+
+### DevOps & Monitoring
+- **Sentry** - Error tracking and performance monitoring
+- **Turborepo** - High-performance build system for monorepos
+- **Bun** - Fast all-in-one JavaScript runtime and package manager
+
+## Project Architecture
+
+- **Monorepo Structure**: Turborepo with Bun package manager
+- **Frontend**: Next.js 15 (apps/web) with Tailwind v4 and shadcn/ui
+- **Backend**: Hono server (apps/server) with tRPC API
+- **Packages**:
+  - `@fotomono/api`: Business logic and tRPC procedures
+  - `@fotomono/auth`: Better-Auth configuration
+  - `@fotomono/db`: Prisma schema and database queries (Supabase PostgreSQL)
+
+## Key Commands
+
+- `bun run dev` - Start all apps in development
+- `bun run dev:web` - Frontend only (http://localhost:3001)
+- `bun run dev:server` - Backend only (http://localhost:3000)
+- `bun run check` - Run Biome linting/formatting
+- `bun run db:push` - Push schema changes to database
+- `bun run db:studio` - Open Drizzle Studio
+
+## Code Quality Tools
+
+**Ultracite** is configured to automatically format code on file save via `.claude/settings.json` hooks.
 
 - **Format code**: `npx ultracite fix`
 - **Check for issues**: `npx ultracite check`
@@ -87,16 +132,43 @@ Write code that is **accessible, performant, type-safe, and maintainable**. Focu
 
 ### Framework-Specific Guidance
 
-**Next.js:**
+**Next.js 15:**
 - Use Next.js `<Image>` component for images
-- Use `next/head` or App Router metadata API for head elements
+- Use App Router metadata API for head elements
 - Use Server Components for async data fetching instead of async Client Components
+- Leverage Server Actions for mutations when appropriate
+- Use `next/link` for client-side navigation
 
-**React 19+:**
-- Use ref as a prop instead of `React.forwardRef`
+**React Query:**
+- Use `useQuery` for data fetching and caching
+- Use `useMutation` for create/update/delete operations
+- Configure proper cache invalidation with `queryClient.invalidateQueries`
+- Leverage optimistic updates for better UX
 
-**Solid/Svelte/Vue/Qwik:**
-- Use `class` and `for` attributes (not `className` or `htmlFor`)
+**Prisma:**
+- Define schema in `packages/db/src/schema/schema.prisma`
+- Use `prisma generate` after schema changes
+- Use `prisma db push` for development, `prisma migrate` for production
+- Leverage Prisma Client's type-safe query API
+- Use transactions for related operations
+
+**tRPC:**
+- Define procedures in `packages/api/`
+- Use proper input validation with Zod schemas
+- Leverage type inference for end-to-end type safety
+- Use middleware for authentication and logging
+
+**Better-Auth:**
+- Configure providers in `packages/auth/`
+- Use session management with proper cookie settings
+- Implement CSRF protection for mutations
+- Validate auth state on both client and server
+
+**Tailwind CSS v4:**
+- Use utility classes instead of custom CSS when possible
+- Extract repeated patterns into components
+- Use `@apply` sparingly - prefer composition
+- Leverage Tailwind's design tokens for consistency
 
 ---
 
@@ -121,3 +193,62 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 ---
 
 Most formatting and common issues are automatically fixed by Biome. Run `npx ultracite fix` before committing to ensure compliance.
+
+---
+
+## AI Assistant Workflow Guidelines
+
+When working on this project, follow these practices:
+
+### File Operations
+- **Always read files before editing** - Never assume file structure
+- **Use specific file paths** - Leverage the monorepo structure
+- **Prefer editing over rewriting** - Use the Edit tool to modify existing files
+
+### Code Changes
+1. **Understand the context** - Read relevant files in the monorepo package
+2. **Follow the architecture** - Respect separation between apps and packages
+3. **Type safety first** - Ensure TypeScript types are correct
+4. **Test your changes** - Run `bun run check-types` to verify
+5. **Format automatically** - Ultracite runs on Edit/Write via hooks
+
+### Monorepo Navigation
+- Frontend code: `apps/web/`
+- Backend code: `apps/server/`
+- Database schema: `packages/db/src/schema/`
+- Auth logic: `packages/auth/`
+- API procedures: `packages/api/`
+
+### Common Tasks
+- **Add a new API endpoint**: Create tRPC procedure in `packages/api/` with Zod input validation
+- **Database changes**:
+  - Update Prisma schema in `packages/db/src/schema/schema.prisma`
+  - Run `bun run db:push` for development or `bun run db:migrate` for production
+  - Run `bun run db:generate` to regenerate Prisma Client
+- **Frontend component**: Add to `apps/web/components/` or `apps/web/app/`
+- **Authentication**:
+  - Configure providers in `packages/auth/`
+  - Add auth middleware to protected routes
+- **Caching with Redis**: Use Upstash Redis for session storage, rate limiting, or data caching
+- **File uploads**: Integrate Cloudflare R2 for S3-compatible object storage
+- **Error tracking**: Configure Sentry for error monitoring and performance tracking
+- **Data fetching**: Use React Query hooks with tRPC for type-safe queries
+
+### Environment Configuration
+
+Environment variables should be configured in:
+- `apps/web/.env.local` - Frontend environment variables
+- `apps/server/.env` - Backend API keys and secrets
+
+Key services requiring configuration:
+- **Supabase**: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_ANON_KEY`
+- **Upstash Redis**: `UPSTASH_REDIS_URL`, `UPSTASH_REDIS_TOKEN`
+- **Cloudflare R2**: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
+- **Sentry**: `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`
+- **Better-Auth**: `AUTH_SECRET`, provider-specific keys (Google, GitHub, etc.)
+
+### Before Committing
+- Types must pass: `bun run check-types`
+- Code must be formatted: Ultracite runs automatically via hooks
+- Consider running: `bun run check` for additional validation
+- Never commit `.env` files - use `.env.example` for documentation
