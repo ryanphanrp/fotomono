@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+bun.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.next/
+.turbo/
+dev-dist/
+out/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env*.local
+.env.production
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.zed/
+
+# Cache
+.cache/
+.eslintcache
+.parcel-cache/
+tmp/
+temp/
+
+# Misc
+*.tgz
+.alchemy/
+.wrangler/
+.expo/
+.svelte-kit/
+.nuxt/
+
+# Generated files
+routeTree.gen.ts
+src-tauri/
+.source/
+
+# Git
+.git/
+.husky/
+
+# Biome/Ultracite config (already in CLAUDE.md)
+bts.jsonc

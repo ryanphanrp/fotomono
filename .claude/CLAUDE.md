@@ -1,8 +1,29 @@
-# Ultracite Code Standards
+# AI Assistant Guidelines for fotomono
 
-This project uses **Ultracite**, a zero-config Biome preset that enforces strict code quality standards through automated formatting and linting.
+This is a **Better-T-Stack** monorepo using TypeScript, Next.js, Hono, tRPC, Drizzle ORM, and Better-Auth. The project follows strict code quality standards enforced by **Ultracite** (Biome preset).
 
-## Quick Reference
+## Project Architecture
+
+- **Monorepo Structure**: Turborepo with Bun package manager
+- **Frontend**: Next.js (apps/web) with TailwindCSS and shadcn/ui
+- **Backend**: Hono server (apps/server) with tRPC API
+- **Packages**:
+  - `@fotomono/api`: Business logic and tRPC procedures
+  - `@fotomono/auth`: Better-Auth configuration
+  - `@fotomono/db`: Drizzle ORM schema and queries (PostgreSQL)
+
+## Key Commands
+
+- `bun run dev` - Start all apps in development
+- `bun run dev:web` - Frontend only (http://localhost:3001)
+- `bun run dev:server` - Backend only (http://localhost:3000)
+- `bun run check` - Run Biome linting/formatting
+- `bun run db:push` - Push schema changes to database
+- `bun run db:studio` - Open Drizzle Studio
+
+## Code Quality Tools
+
+**Ultracite** is configured to automatically format code on file save via `.claude/settings.json` hooks.
 
 - **Format code**: `npx ultracite fix`
 - **Check for issues**: `npx ultracite check`
@@ -121,3 +142,39 @@ Biome's linter will catch most issues automatically. Focus your attention on:
 ---
 
 Most formatting and common issues are automatically fixed by Biome. Run `npx ultracite fix` before committing to ensure compliance.
+
+---
+
+## AI Assistant Workflow Guidelines
+
+When working on this project, follow these practices:
+
+### File Operations
+- **Always read files before editing** - Never assume file structure
+- **Use specific file paths** - Leverage the monorepo structure
+- **Prefer editing over rewriting** - Use the Edit tool to modify existing files
+
+### Code Changes
+1. **Understand the context** - Read relevant files in the monorepo package
+2. **Follow the architecture** - Respect separation between apps and packages
+3. **Type safety first** - Ensure TypeScript types are correct
+4. **Test your changes** - Run `bun run check-types` to verify
+5. **Format automatically** - Ultracite runs on Edit/Write via hooks
+
+### Monorepo Navigation
+- Frontend code: `apps/web/`
+- Backend code: `apps/server/`
+- Database schema: `packages/db/src/schema/`
+- Auth logic: `packages/auth/`
+- API procedures: `packages/api/`
+
+### Common Tasks
+- **Add a new API endpoint**: Create tRPC procedure in `packages/api/`
+- **Database changes**: Update schema in `packages/db/src/schema/`, then run `bun run db:push`
+- **Frontend component**: Add to `apps/web/components/` or `apps/web/app/`
+- **Authentication**: Modify `packages/auth/`
+
+### Before Committing
+- Types must pass: `bun run check-types`
+- Code must be formatted: Ultracite runs automatically via hooks
+- Consider running: `bun run check` for additional validation
