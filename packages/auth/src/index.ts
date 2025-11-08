@@ -2,21 +2,34 @@ import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@fotomono/db";
 import * as schema from "@fotomono/db/schema/auth";
+import dotenv from "dotenv";
+
+// Load environment variables
+dotenv.config({ path: "../../apps/server/.env" });
 
 export const auth = betterAuth<BetterAuthOptions>({
 	database: drizzleAdapter(db, {
 		provider: "pg",
-
 		schema: schema,
 	}),
-	trustedOrigins: [process.env.CORS_ORIGIN || ""],
+	secret: process.env.BETTER_AUTH_SECRET || "",
+	baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+	trustedOrigins: [
+		process.env.CORS_ORIGIN || "http://localhost:3001",
+		process.env.BETTER_AUTH_URL || "http://localhost:3000",
+	],
 	emailAndPassword: {
 		enabled: true,
+		requireEmailVerification: false, // Set to true in production
+	},
+	session: {
+		expiresIn: 60 * 60 * 24 * 7, // 7 days
+		updateAge: 60 * 60 * 24, // 1 day
 	},
 	advanced: {
 		defaultCookieAttributes: {
-			sameSite: "none",
-			secure: true,
+			sameSite: "lax", // Changed from "none" for local development
+			secure: process.env.NODE_ENV === "production",
 			httpOnly: true,
 		},
 	},
