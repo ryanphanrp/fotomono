@@ -1,12 +1,21 @@
-import { authClient } from "@/lib/auth-client";
+"use client";
+
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
-import z from "zod";
-import Loader from "./loader";
+import { useRouter } from "next/navigation";
+import { trpc } from "@/utils/trpc";
+import { loginSchema } from "@fotomono/api/schemas/auth";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { useRouter } from "next/navigation";
+import { Checkbox } from "./ui/checkbox";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "./ui/card";
 
 export default function SignInForm({
 	onSwitchToSignUp,
@@ -14,122 +23,179 @@ export default function SignInForm({
 	onSwitchToSignUp: () => void;
 }) {
 	const router = useRouter();
-	const { isPending } = authClient.useSession();
+
+	// Use tRPC mutation for login
+	const loginMutation = trpc.auth.login.useMutation({
+		onSuccess: (data) => {
+			toast.success(data.message || "Welcome back!");
+			router.push("/dashboard");
+		},
+		onError: (error) => {
+			toast.error(error.message || "Failed to sign in");
+		},
+	});
 
 	const form = useForm({
 		defaultValues: {
 			email: "",
 			password: "",
+			rememberMe: false,
 		},
 		onSubmit: async ({ value }) => {
-			await authClient.signIn.email(
-				{
-					email: value.email,
-					password: value.password,
-				},
-				{
-					onSuccess: () => {
-						router.push("/dashboard");
-						toast.success("Sign in successful");
-					},
-					onError: (error) => {
-						toast.error(error.error.message || error.error.statusText);
-					},
-				},
-			);
+			loginMutation.mutate(value);
 		},
 		validators: {
-			onSubmit: z.object({
-				email: z.email("Invalid email address"),
-				password: z.string().min(8, "Password must be at least 8 characters"),
-			}),
+			onSubmit: loginSchema,
 		},
 	});
 
-	if (isPending) {
-		return <Loader />;
-	}
-
 	return (
-		<div className="mx-auto w-full mt-10 max-w-md p-6">
-			<h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+		<div className="mx-auto w-full mt-10 max-w-md">
+			<Card>
+				<CardHeader className="space-y-1">
+					<CardTitle className="text-2xl font-bold text-center">
+						Welcome Back
+					</CardTitle>
+					<CardDescription className="text-center">
+						Sign in to your FotoMono account
+					</CardDescription>
+				</CardHeader>
+				<CardContent>
+					<form
+						onSubmit={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							form.handleSubmit();
+						}}
+						className="space-y-4"
+					>
+						{/* Email Field */}
+						<div>
+							<form.Field name="email">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>
+											Email <span className="text-red-500">*</span>
+										</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											type="email"
+											placeholder="you@example.com"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											disabled={loginMutation.isPending}
+										/>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-red-500">
+												{field.state.meta.errors[0]?.message}
+											</p>
+										)}
+									</div>
+								)}
+							</form.Field>
+						</div>
 
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					e.stopPropagation();
-					form.handleSubmit();
-				}}
-				className="space-y-4"
-			>
-				<div>
-					<form.Field name="email">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>Email</Label>
-								<Input
-									id={field.name}
-									name={field.name}
-									type="email"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
-										{error?.message}
-									</p>
-								))}
-							</div>
-						)}
-					</form.Field>
-				</div>
+						{/* Password Field */}
+						<div>
+							<form.Field name="password">
+								{(field) => (
+									<div className="space-y-2">
+										<Label htmlFor={field.name}>
+											Password <span className="text-red-500">*</span>
+										</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											type="password"
+											placeholder="••••••••"
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(e) => field.handleChange(e.target.value)}
+											disabled={loginMutation.isPending}
+										/>
+										{field.state.meta.errors.length > 0 && (
+											<p className="text-sm text-red-500">
+												{field.state.meta.errors[0]?.message}
+											</p>
+										)}
+									</div>
+								)}
+							</form.Field>
+						</div>
 
-				<div>
-					<form.Field name="password">
-						{(field) => (
-							<div className="space-y-2">
-								<Label htmlFor={field.name}>Password</Label>
-								<Input
-									id={field.name}
-									name={field.name}
-									type="password"
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(e) => field.handleChange(e.target.value)}
-								/>
-								{field.state.meta.errors.map((error) => (
-									<p key={error?.message} className="text-red-500">
-										{error?.message}
-									</p>
-								))}
-							</div>
-						)}
-					</form.Field>
-				</div>
+						{/* Remember Me Checkbox */}
+						<div>
+							<form.Field name="rememberMe">
+								{(field) => (
+									<div className="flex items-center space-x-2">
+										<Checkbox
+											id={field.name}
+											checked={field.state.value}
+											onCheckedChange={(checked) =>
+												field.handleChange(checked as boolean)
+											}
+											disabled={loginMutation.isPending}
+										/>
+										<Label
+											htmlFor={field.name}
+											className="text-sm font-normal cursor-pointer"
+										>
+											Remember me for 7 days
+										</Label>
+									</div>
+								)}
+							</form.Field>
+						</div>
 
-				<form.Subscribe>
-					{(state) => (
+						{/* Submit Button */}
+						<form.Subscribe>
+							{(state) => (
+								<Button
+									type="submit"
+									className="w-full"
+									disabled={
+										!state.canSubmit ||
+										state.isSubmitting ||
+										loginMutation.isPending
+									}
+								>
+									{loginMutation.isPending || state.isSubmitting
+										? "Signing in..."
+										: "Sign In"}
+								</Button>
+							)}
+						</form.Subscribe>
+					</form>
+
+					{/* Forgot Password Link - Phase 2 */}
+					<div className="mt-4 text-center">
 						<Button
-							type="submit"
-							className="w-full"
-							disabled={!state.canSubmit || state.isSubmitting}
+							variant="link"
+							className="p-0 h-auto text-sm text-gray-600 hover:text-gray-800"
+							disabled
 						>
-							{state.isSubmitting ? "Submitting..." : "Sign In"}
+							Forgot password? (Coming soon)
 						</Button>
-					)}
-				</form.Subscribe>
-			</form>
+					</div>
 
-			<div className="mt-4 text-center">
-				<Button
-					variant="link"
-					onClick={onSwitchToSignUp}
-					className="text-indigo-600 hover:text-indigo-800"
-				>
-					Need an account? Sign Up
-				</Button>
-			</div>
+					{/* Switch to Sign Up */}
+					<div className="mt-6 text-center">
+						<p className="text-sm text-gray-600">
+							Don't have an account?{" "}
+							<Button
+								variant="link"
+								onClick={onSwitchToSignUp}
+								className="p-0 h-auto font-semibold text-primary hover:underline"
+								disabled={loginMutation.isPending}
+							>
+								Sign Up
+							</Button>
+						</p>
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	);
 }
