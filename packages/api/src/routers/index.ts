@@ -1,5 +1,6 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
 import { authRouter } from "./auth";
+import { showsRouter } from "./shows";
 
 export const appRouter = router({
 	// Health check
@@ -17,6 +18,9 @@ export const appRouter = router({
 
 	// Authentication routes
 	auth: authRouter,
+
+	// Shows management routes
+	shows: showsRouter,
 });
 
 export type AppRouter = typeof appRouter;
