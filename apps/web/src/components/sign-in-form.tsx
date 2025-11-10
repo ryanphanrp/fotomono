@@ -2,7 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "@/utils/trpc";
 import { loginSchema } from "@fotomono/api/schemas/auth";
 import { Button } from "./ui/button";
@@ -23,12 +23,16 @@ export default function SignInForm({
 	onSwitchToSignUp: () => void;
 }) {
 	const router = useRouter();
+	const searchParams = useSearchParams();
+
+	// Get callback URL from query params (set by middleware)
+	const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
 	// Use tRPC mutation for login
 	const loginMutation = trpc.auth.login.useMutation({
 		onSuccess: (data) => {
 			toast.success(data.message || "Welcome back!");
-			router.push("/dashboard");
+			router.push(callbackUrl);
 		},
 		onError: (error) => {
 			toast.error(error.message || "Failed to sign in");
