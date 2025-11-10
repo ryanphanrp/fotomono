@@ -29,6 +29,7 @@
     "@ai-sdk/google": "catalog:",
     "dotenv": "catalog:",
     "zod": "catalog:",
+    "nanoid": "^5.0.0",
     "@fotomono/auth": "workspace:*",
     "@fotomono/db": "workspace:*"
   }
