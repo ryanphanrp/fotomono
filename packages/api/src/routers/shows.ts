@@ -13,6 +13,7 @@ import { db } from "@fotomono/db";
 import { show } from "@fotomono/db/schema/shows";
 import { eq, and, gte, lte, or, like, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { scheduleShowReminders, rescheduleShowReminders } from "../utils/reminders";
 
 /**
  * Shows router
@@ -56,8 +57,8 @@ export const showsRouter = router({
 					updatedAt: new Date(),
 				}).returning();
 
-				// TODO: Schedule reminders (Phase 2)
-				// await scheduleShowReminders(newShow[0].id, input.dateStart);
+				// Schedule reminders for the show
+				await scheduleShowReminders(newShow[0].id, input.dateStart);
 
 				return {
 					success: true,
@@ -223,6 +224,11 @@ export const showsRouter = router({
 					.set(updateData)
 					.where(and(eq(show.id, input.id), eq(show.userId, userId)))
 					.returning();
+
+				// Reschedule reminders if the start date changed
+				if (input.dateStart !== undefined) {
+					await rescheduleShowReminders(input.id, input.dateStart);
+				}
 
 				return {
 					success: true,
