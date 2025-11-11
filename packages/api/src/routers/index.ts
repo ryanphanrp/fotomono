@@ -1,6 +1,8 @@
 import { protectedProcedure, publicProcedure, router } from "../index";
 import { authRouter } from "./auth";
 import { showsRouter } from "./shows";
+import { storageRouter } from "./storage";
+import { imagesRouter } from "./images";
 
 export const appRouter = router({
 	// Health check
@@ -21,6 +23,12 @@ export const appRouter = router({
 
 	// Shows management routes
 	shows: showsRouter,
+
+	// Storage configuration routes
+	storage: storageRouter,
+
+	// Image management routes
+	images: imagesRouter,
 });
 
 export type AppRouter = typeof appRouter;
