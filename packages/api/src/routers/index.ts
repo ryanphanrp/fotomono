@@ -3,6 +3,8 @@ import { authRouter } from "./auth";
 import { showsRouter } from "./shows";
 import { storageRouter } from "./storage";
 import { imagesRouter } from "./images";
+import { portfolioRouter } from "./portfolio";
+import { approvalRouter } from "./approval";
 
 export const appRouter = router({
 	// Health check
@@ -29,6 +31,12 @@ export const appRouter = router({
 
 	// Image management routes
 	images: imagesRouter,
+
+	// Portfolio management routes
+	portfolio: portfolioRouter,
+
+	// Client approval routes
+	approval: approvalRouter,
 });
 
 export type AppRouter = typeof appRouter;
