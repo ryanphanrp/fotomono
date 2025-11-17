@@ -1,5 +1,10 @@
 import { db } from "@fotomono/db";
-import { portfolioImage, image, show } from "@fotomono/db/schema";
+import {
+	portfolioImage,
+	portfolioSettings,
+	image,
+	show,
+} from "@fotomono/db/schema";
 import { eq, and, desc, asc, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -323,6 +328,194 @@ export class PortfolioService {
 		}
 
 		return Array.from(allTags).sort();
+	}
+
+	/**
+	 * Get portfolio settings for a user
+	 */
+	async getSettings(userId: string) {
+		const settings = await db
+			.select()
+			.from(portfolioSettings)
+			.where(eq(portfolioSettings.userId, userId))
+			.limit(1);
+
+		return settings[0] || null;
+	}
+
+	/**
+	 * Get public portfolio data by subdomain
+	 */
+	async getPublicData(subdomain: string) {
+		// Get settings
+		const settings = await db
+			.select()
+			.from(portfolioSettings)
+			.where(eq(portfolioSettings.subdomain, subdomain))
+			.limit(1);
+
+		if (!settings || settings.length === 0) {
+			throw new Error("Portfolio not found");
+		}
+
+		const portfolioData = settings[0];
+
+		// Get published portfolio images
+		const images = await db
+			.select({
+				id: portfolioImage.id,
+				imageId: portfolioImage.imageId,
+				category: portfolioImage.category,
+				tags: portfolioImage.tags,
+				position: portfolioImage.position,
+				publishedAt: portfolioImage.publishedAt,
+				// Image details
+				filename: image.filename,
+				thumbnailSmallUrl: image.thumbnailSmallUrl,
+				thumbnailMediumUrl: image.thumbnailMediumUrl,
+				thumbnailLargeUrl: image.thumbnailLargeUrl,
+				url: image.url,
+				width: image.width,
+				height: image.height,
+			})
+			.from(portfolioImage)
+			.innerJoin(image, eq(portfolioImage.imageId, image.id))
+			.where(eq(portfolioImage.userId, portfolioData.userId))
+			.orderBy(asc(portfolioImage.position));
+
+		return {
+			settings: portfolioData,
+			images,
+		};
+	}
+
+	/**
+	 * Update or create portfolio settings
+	 */
+	async updateSettings(
+		userId: string,
+		data: {
+			subdomain?: string;
+			theme?: string;
+			primaryColor?: string;
+			accentColor?: string;
+			bio?: string;
+			logoUrl?: string;
+			profileImageUrl?: string;
+			contactEmail?: string;
+			contactPhone?: string;
+			socialLinks?: {
+				instagram?: string;
+				facebook?: string;
+				twitter?: string;
+				linkedin?: string;
+				pinterest?: string;
+				website?: string;
+			};
+			metaTitle?: string;
+			metaDescription?: string;
+		},
+	) {
+		// Check if settings exist
+		const existing = await db
+			.select()
+			.from(portfolioSettings)
+			.where(eq(portfolioSettings.userId, userId))
+			.limit(1);
+
+		if (existing && existing.length > 0) {
+			// Update existing
+			const updated = await db
+				.update(portfolioSettings)
+				.set({
+					...(data.subdomain !== undefined && { subdomain: data.subdomain }),
+					...(data.theme !== undefined && { theme: data.theme }),
+					...(data.primaryColor !== undefined && {
+						primaryColor: data.primaryColor,
+					}),
+					...(data.accentColor !== undefined && {
+						accentColor: data.accentColor,
+					}),
+					...(data.bio !== undefined && { bio: data.bio }),
+					...(data.logoUrl !== undefined && { logoUrl: data.logoUrl }),
+					...(data.profileImageUrl !== undefined && {
+						profileImageUrl: data.profileImageUrl,
+					}),
+					...(data.contactEmail !== undefined && {
+						contactEmail: data.contactEmail,
+					}),
+					...(data.contactPhone !== undefined && {
+						contactPhone: data.contactPhone,
+					}),
+					...(data.socialLinks !== undefined && {
+						socialLinks: data.socialLinks,
+					}),
+					...(data.metaTitle !== undefined && { metaTitle: data.metaTitle }),
+					...(data.metaDescription !== undefined && {
+						metaDescription: data.metaDescription,
+					}),
+					updatedAt: new Date(),
+				})
+				.where(eq(portfolioSettings.id, existing[0].id))
+				.returning();
+
+			return updated[0];
+		}
+
+		// Create new settings - subdomain is required
+		if (!data.subdomain) {
+			throw new Error("Subdomain is required for new portfolio settings");
+		}
+
+		const created = await db
+			.insert(portfolioSettings)
+			.values({
+				id: nanoid(),
+				userId,
+				subdomain: data.subdomain,
+				theme: data.theme || "default",
+				primaryColor: data.primaryColor || "#000000",
+				accentColor: data.accentColor || "#FF6B6B",
+				bio: data.bio || null,
+				logoUrl: data.logoUrl || null,
+				profileImageUrl: data.profileImageUrl || null,
+				contactEmail: data.contactEmail || null,
+				contactPhone: data.contactPhone || null,
+				socialLinks: data.socialLinks || null,
+				metaTitle: data.metaTitle || null,
+				metaDescription: data.metaDescription || null,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			})
+			.returning();
+
+		return created[0];
+	}
+
+	/**
+	 * Check if subdomain is available
+	 */
+	async checkSubdomainAvailability(
+		subdomain: string,
+		currentUserId?: string,
+	): Promise<boolean> {
+		const existing = await db
+			.select()
+			.from(portfolioSettings)
+			.where(eq(portfolioSettings.subdomain, subdomain))
+			.limit(1);
+
+		// If no existing, it's available
+		if (!existing || existing.length === 0) {
+			return true;
+		}
+
+		// If belongs to current user, it's available (for updating)
+		if (currentUserId && existing[0].userId === currentUserId) {
+			return true;
+		}
+
+		return false;
 	}
 }
 
