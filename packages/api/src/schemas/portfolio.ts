@@ -84,3 +84,64 @@ export const getCategoriesSchema = z.object({
 });
 
 export type GetCategoriesInput = z.infer<typeof getCategoriesSchema>;
+
+/**
+ * Get public portfolio data schema (public)
+ */
+export const getPublicDataSchema = z.object({
+	subdomain: z.string().min(1, "Subdomain is required"),
+});
+
+export type GetPublicDataInput = z.infer<typeof getPublicDataSchema>;
+
+/**
+ * Update portfolio settings schema
+ */
+export const updateSettingsSchema = z.object({
+	subdomain: z
+		.string()
+		.min(3, "Subdomain must be at least 3 characters")
+		.max(50)
+		.regex(
+			/^[a-z0-9-]+$/,
+			"Subdomain can only contain lowercase letters, numbers, and hyphens",
+		)
+		.optional(),
+	theme: z
+		.enum(["default", "minimal", "modern", "classic"])
+		.default("default")
+		.optional(),
+	primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+	accentColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+	bio: z.string().max(2000).optional(),
+	logoUrl: z.string().url().optional(),
+	profileImageUrl: z.string().url().optional(),
+	contactEmail: z.string().email().optional(),
+	contactPhone: z.string().max(50).optional(),
+	socialLinks: z
+		.object({
+			instagram: z.string().url().optional(),
+			facebook: z.string().url().optional(),
+			twitter: z.string().url().optional(),
+			linkedin: z.string().url().optional(),
+			pinterest: z.string().url().optional(),
+			website: z.string().url().optional(),
+		})
+		.optional(),
+	metaTitle: z.string().max(255).optional(),
+	metaDescription: z.string().max(500).optional(),
+});
+
+export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
+
+/**
+ * Check subdomain availability schema
+ */
+export const checkSubdomainSchema = z.object({
+	subdomain: z
+		.string()
+		.min(3, "Subdomain must be at least 3 characters")
+		.max(50),
+});
+
+export type CheckSubdomainInput = z.infer<typeof checkSubdomainSchema>;
