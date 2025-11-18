@@ -17,40 +17,40 @@ export type ReminderTriggerType = "1_day_before" | "1_hour_before" | "custom";
  * @returns Array of created reminder records
  */
 export async function scheduleShowReminders(
-	showId: string,
-	showStartDate: Date,
+  showId: string,
+  showStartDate: Date
 ): Promise<void> {
-	// Calculate trigger times
-	const oneDayBefore = new Date(showStartDate);
-	oneDayBefore.setDate(oneDayBefore.getDate() - 1);
+  // Calculate trigger times
+  const oneDayBefore = new Date(showStartDate);
+  oneDayBefore.setDate(oneDayBefore.getDate() - 1);
 
-	const oneHourBefore = new Date(showStartDate);
-	oneHourBefore.setHours(oneHourBefore.getHours() - 1);
+  const oneHourBefore = new Date(showStartDate);
+  oneHourBefore.setHours(oneHourBefore.getHours() - 1);
 
-	// Create reminder records
-	const reminders = [
-		{
-			id: nanoid(),
-			showId,
-			triggerType: "1_day_before" as ReminderTriggerType,
-			triggerTime: oneDayBefore,
-			sent: false,
-			sentAt: null,
-			createdAt: new Date(),
-		},
-		{
-			id: nanoid(),
-			showId,
-			triggerType: "1_hour_before" as ReminderTriggerType,
-			triggerTime: oneHourBefore,
-			sent: false,
-			sentAt: null,
-			createdAt: new Date(),
-		},
-	];
+  // Create reminder records
+  const reminders = [
+    {
+      id: nanoid(),
+      showId,
+      triggerType: "1_day_before" as ReminderTriggerType,
+      triggerTime: oneDayBefore,
+      sent: false,
+      sentAt: null,
+      createdAt: new Date(),
+    },
+    {
+      id: nanoid(),
+      showId,
+      triggerType: "1_hour_before" as ReminderTriggerType,
+      triggerTime: oneHourBefore,
+      sent: false,
+      sentAt: null,
+      createdAt: new Date(),
+    },
+  ];
 
-	// Insert reminders into database
-	await db.insert(showReminder).values(reminders);
+  // Insert reminders into database
+  await db.insert(showReminder).values(reminders);
 }
 
 /**
@@ -60,7 +60,7 @@ export async function scheduleShowReminders(
  * @param showId - The ID of the show
  */
 export async function deleteShowReminders(showId: string): Promise<void> {
-	await db.delete(showReminder).where(eq(showReminder.showId, showId));
+  await db.delete(showReminder).where(eq(showReminder.showId, showId));
 }
 
 /**
@@ -71,12 +71,12 @@ export async function deleteShowReminders(showId: string): Promise<void> {
  * @param newStartDate - The new start date
  */
 export async function rescheduleShowReminders(
-	showId: string,
-	newStartDate: Date,
+  showId: string,
+  newStartDate: Date
 ): Promise<void> {
-	// Delete existing reminders
-	await deleteShowReminders(showId);
+  // Delete existing reminders
+  await deleteShowReminders(showId);
 
-	// Create new reminders
-	await scheduleShowReminders(showId, newStartDate);
+  // Create new reminders
+  await scheduleShowReminders(showId, newStartDate);
 }

@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 import { auth } from "@fotomono/auth";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import {
-	isAuthRoute,
-	isProtectedRoute,
-	shouldExcludeFromMiddleware,
-	DEFAULT_LOGIN_REDIRECT,
-	DEFAULT_AUTH_REDIRECT,
+  DEFAULT_AUTH_REDIRECT,
+  DEFAULT_LOGIN_REDIRECT,
+  isAuthRoute,
+  isProtectedRoute,
+  shouldExcludeFromMiddleware,
 } from "@/lib/routes";
 
 /**
@@ -20,52 +20,54 @@ import {
  */
 
 export async function middleware(request: NextRequest) {
-	const { pathname } = request.nextUrl;
+  const { pathname } = request.nextUrl;
 
-	// Skip middleware for static files, API routes, and Next.js internals
-	if (shouldExcludeFromMiddleware(pathname)) {
-		return NextResponse.next();
-	}
+  // Skip middleware for static files, API routes, and Next.js internals
+  if (shouldExcludeFromMiddleware(pathname)) {
+    return NextResponse.next();
+  }
 
-	try {
-		// Get session from Better-Auth
-		const session = await auth.api.getSession({
-			headers: request.headers,
-		});
+  try {
+    // Get session from Better-Auth
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
 
-		const isAuthenticated = !!session?.session;
-		const authRoute = isAuthRoute(pathname);
-		const protectedRoute = isProtectedRoute(pathname);
+    const isAuthenticated = !!session?.session;
+    const authRoute = isAuthRoute(pathname);
+    const protectedRoute = isProtectedRoute(pathname);
 
-		// If user is authenticated and trying to access auth pages (login/register)
-		// Redirect to dashboard
-		if (isAuthenticated && authRoute) {
-			return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, request.url));
-		}
+    // If user is authenticated and trying to access auth pages (login/register)
+    // Redirect to dashboard
+    if (isAuthenticated && authRoute) {
+      return NextResponse.redirect(
+        new URL(DEFAULT_LOGIN_REDIRECT, request.url)
+      );
+    }
 
-		// If user is not authenticated and trying to access protected routes
-		// Redirect to login with callback URL
-		if (!isAuthenticated && protectedRoute) {
-			const loginUrl = new URL(DEFAULT_AUTH_REDIRECT, request.url);
-			loginUrl.searchParams.set("callbackUrl", pathname);
-			return NextResponse.redirect(loginUrl);
-		}
+    // If user is not authenticated and trying to access protected routes
+    // Redirect to login with callback URL
+    if (!isAuthenticated && protectedRoute) {
+      const loginUrl = new URL(DEFAULT_AUTH_REDIRECT, request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
 
-		// Allow the request to proceed
-		return NextResponse.next();
-	} catch (error) {
-		console.error("Middleware error:", error);
+    // Allow the request to proceed
+    return NextResponse.next();
+  } catch (error) {
+    console.error("Middleware error:", error);
 
-		// On error, redirect to login for protected routes
-		if (isProtectedRoute(pathname)) {
-			const loginUrl = new URL(DEFAULT_AUTH_REDIRECT, request.url);
-			loginUrl.searchParams.set("callbackUrl", pathname);
-			return NextResponse.redirect(loginUrl);
-		}
+    // On error, redirect to login for protected routes
+    if (isProtectedRoute(pathname)) {
+      const loginUrl = new URL(DEFAULT_AUTH_REDIRECT, request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
 
-		// Allow public routes to proceed even on error
-		return NextResponse.next();
-	}
+    // Allow public routes to proceed even on error
+    return NextResponse.next();
+  }
 }
 
 /**
@@ -73,14 +75,14 @@ export async function middleware(request: NextRequest) {
  * Only run middleware on specific paths to improve performance
  */
 export const config = {
-	matcher: [
-		/*
-		 * Match all request paths except:
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 * - public files (public folder)
-		 */
-		"/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-	],
+  matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };

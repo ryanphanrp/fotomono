@@ -1,205 +1,205 @@
 "use client";
 
-import { useForm } from "@tanstack/react-form";
-import { toast } from "sonner";
-import { useRouter, useSearchParams } from "next/navigation";
-import { trpc } from "@/utils/trpc";
 import { loginSchema } from "@fotomono/api/schemas/auth";
+import { useForm } from "@tanstack/react-form";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { trpc } from "@/utils/trpc";
 import { Button } from "./ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Checkbox } from "./ui/checkbox";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Checkbox } from "./ui/checkbox";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "./ui/card";
 
 export default function SignInForm({
-	onSwitchToSignUp,
+  onSwitchToSignUp,
 }: {
-	onSwitchToSignUp: () => void;
+  onSwitchToSignUp: () => void;
 }) {
-	const router = useRouter();
-	const searchParams = useSearchParams();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-	// Get callback URL from query params (set by middleware)
-	const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  // Get callback URL from query params (set by middleware)
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
 
-	// Use tRPC mutation for login
-	const loginMutation = trpc.auth.login.useMutation({
-		onSuccess: (data) => {
-			toast.success(data.message || "Welcome back!");
-			router.push(callbackUrl);
-		},
-		onError: (error) => {
-			toast.error(error.message || "Failed to sign in");
-		},
-	});
+  // Use tRPC mutation for login
+  const loginMutation = trpc.auth.login.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message || "Welcome back!");
+      router.push(callbackUrl);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to sign in");
+    },
+  });
 
-	const form = useForm({
-		defaultValues: {
-			email: "",
-			password: "",
-			rememberMe: false,
-		},
-		onSubmit: async ({ value }) => {
-			loginMutation.mutate(value);
-		},
-		validators: {
-			onSubmit: loginSchema,
-		},
-	});
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false,
+    },
+    onSubmit: async ({ value }) => {
+      loginMutation.mutate(value);
+    },
+    validators: {
+      onSubmit: loginSchema,
+    },
+  });
 
-	return (
-		<div className="mx-auto w-full mt-10 max-w-md">
-			<Card>
-				<CardHeader className="space-y-1">
-					<CardTitle className="text-2xl font-bold text-center">
-						Welcome Back
-					</CardTitle>
-					<CardDescription className="text-center">
-						Sign in to your FotoMono account
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<form
-						onSubmit={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
-							form.handleSubmit();
-						}}
-						className="space-y-4"
-					>
-						{/* Email Field */}
-						<div>
-							<form.Field name="email">
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Email <span className="text-red-500">*</span>
-										</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											type="email"
-											placeholder="you@example.com"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											disabled={loginMutation.isPending}
-										/>
-										{field.state.meta.errors.length > 0 && (
-											<p className="text-sm text-red-500">
-												{field.state.meta.errors[0]?.message}
-											</p>
-										)}
-									</div>
-								)}
-							</form.Field>
-						</div>
+  return (
+    <div className="mx-auto mt-10 w-full max-w-md">
+      <Card>
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-center font-bold text-2xl">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-center">
+            Sign in to your FotoMono account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              form.handleSubmit();
+            }}
+          >
+            {/* Email Field */}
+            <div>
+              <form.Field name="email">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>
+                      Email <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      disabled={loginMutation.isPending}
+                      id={field.name}
+                      name={field.name}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="you@example.com"
+                      type="email"
+                      value={field.state.value}
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className="text-red-500 text-sm">
+                        {field.state.meta.errors[0]?.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </form.Field>
+            </div>
 
-						{/* Password Field */}
-						<div>
-							<form.Field name="password">
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>
-											Password <span className="text-red-500">*</span>
-										</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											type="password"
-											placeholder="••••••••"
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(e) => field.handleChange(e.target.value)}
-											disabled={loginMutation.isPending}
-										/>
-										{field.state.meta.errors.length > 0 && (
-											<p className="text-sm text-red-500">
-												{field.state.meta.errors[0]?.message}
-											</p>
-										)}
-									</div>
-								)}
-							</form.Field>
-						</div>
+            {/* Password Field */}
+            <div>
+              <form.Field name="password">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label htmlFor={field.name}>
+                      Password <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      disabled={loginMutation.isPending}
+                      id={field.name}
+                      name={field.name}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      placeholder="••••••••"
+                      type="password"
+                      value={field.state.value}
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className="text-red-500 text-sm">
+                        {field.state.meta.errors[0]?.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </form.Field>
+            </div>
 
-						{/* Remember Me Checkbox */}
-						<div>
-							<form.Field name="rememberMe">
-								{(field) => (
-									<div className="flex items-center space-x-2">
-										<Checkbox
-											id={field.name}
-											checked={field.state.value}
-											onCheckedChange={(checked) =>
-												field.handleChange(checked as boolean)
-											}
-											disabled={loginMutation.isPending}
-										/>
-										<Label
-											htmlFor={field.name}
-											className="text-sm font-normal cursor-pointer"
-										>
-											Remember me for 7 days
-										</Label>
-									</div>
-								)}
-							</form.Field>
-						</div>
+            {/* Remember Me Checkbox */}
+            <div>
+              <form.Field name="rememberMe">
+                {(field) => (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      checked={field.state.value}
+                      disabled={loginMutation.isPending}
+                      id={field.name}
+                      onCheckedChange={(checked) =>
+                        field.handleChange(checked as boolean)
+                      }
+                    />
+                    <Label
+                      className="cursor-pointer font-normal text-sm"
+                      htmlFor={field.name}
+                    >
+                      Remember me for 7 days
+                    </Label>
+                  </div>
+                )}
+              </form.Field>
+            </div>
 
-						{/* Submit Button */}
-						<form.Subscribe>
-							{(state) => (
-								<Button
-									type="submit"
-									className="w-full"
-									disabled={
-										!state.canSubmit ||
-										state.isSubmitting ||
-										loginMutation.isPending
-									}
-								>
-									{loginMutation.isPending || state.isSubmitting
-										? "Signing in..."
-										: "Sign In"}
-								</Button>
-							)}
-						</form.Subscribe>
-					</form>
+            {/* Submit Button */}
+            <form.Subscribe>
+              {(state) => (
+                <Button
+                  className="w-full"
+                  disabled={
+                    !state.canSubmit ||
+                    state.isSubmitting ||
+                    loginMutation.isPending
+                  }
+                  type="submit"
+                >
+                  {loginMutation.isPending || state.isSubmitting
+                    ? "Signing in..."
+                    : "Sign In"}
+                </Button>
+              )}
+            </form.Subscribe>
+          </form>
 
-					{/* Forgot Password Link - Phase 2 */}
-					<div className="mt-4 text-center">
-						<Button
-							variant="link"
-							className="p-0 h-auto text-sm text-gray-600 hover:text-gray-800"
-							disabled
-						>
-							Forgot password? (Coming soon)
-						</Button>
-					</div>
+          {/* Forgot Password Link - Phase 2 */}
+          <div className="mt-4 text-center">
+            <Button
+              className="h-auto p-0 text-gray-600 text-sm hover:text-gray-800"
+              disabled
+              variant="link"
+            >
+              Forgot password? (Coming soon)
+            </Button>
+          </div>
 
-					{/* Switch to Sign Up */}
-					<div className="mt-6 text-center">
-						<p className="text-sm text-gray-600">
-							Don't have an account?{" "}
-							<Button
-								variant="link"
-								onClick={onSwitchToSignUp}
-								className="p-0 h-auto font-semibold text-primary hover:underline"
-								disabled={loginMutation.isPending}
-							>
-								Sign Up
-							</Button>
-						</p>
-					</div>
-				</CardContent>
-			</Card>
-		</div>
-	);
+          {/* Switch to Sign Up */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600 text-sm">
+              Don't have an account?{" "}
+              <Button
+                className="h-auto p-0 font-semibold text-primary hover:underline"
+                disabled={loginMutation.isPending}
+                onClick={onSwitchToSignUp}
+                variant="link"
+              >
+                Sign Up
+              </Button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

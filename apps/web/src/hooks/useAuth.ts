@@ -1,8 +1,8 @@
 "use client";
 
-import { trpc } from "@/utils/trpc";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { trpc } from "@/utils/trpc";
 
 /**
  * useAuth Hook
@@ -20,53 +20,53 @@ import { toast } from "sonner";
  * ```
  */
 export function useAuth() {
-	const router = useRouter();
+  const router = useRouter();
 
-	// Get session data using tRPC
-	const {
-		data: sessionData,
-		isLoading,
-		error,
-		refetch,
-	} = trpc.auth.getSession.useQuery(undefined, {
-		retry: 1,
-		refetchOnWindowFocus: false,
-	});
+  // Get session data using tRPC
+  const {
+    data: sessionData,
+    isLoading,
+    error,
+    refetch,
+  } = trpc.auth.getSession.useQuery(undefined, {
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
-	// Logout mutation
-	const logoutMutation = trpc.auth.logout.useMutation({
-		onSuccess: () => {
-			toast.success("Logged out successfully");
-			router.push("/login");
-			// Refetch session to update state
-			refetch();
-		},
-		onError: (error) => {
-			toast.error(error.message || "Failed to logout");
-		},
-	});
+  // Logout mutation
+  const logoutMutation = trpc.auth.logout.useMutation({
+    onSuccess: () => {
+      toast.success("Logged out successfully");
+      router.push("/login");
+      // Refetch session to update state
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to logout");
+    },
+  });
 
-	const logout = () => {
-		logoutMutation.mutate();
-	};
+  const logout = () => {
+    logoutMutation.mutate();
+  };
 
-	return {
-		// User data
-		user: sessionData?.user || null,
-		session: sessionData?.session || null,
+  return {
+    // User data
+    user: sessionData?.user || null,
+    session: sessionData?.session || null,
 
-		// Authentication state
-		isAuthenticated: sessionData?.isAuthenticated || false,
-		isLoading,
-		error,
+    // Authentication state
+    isAuthenticated: sessionData?.isAuthenticated,
+    isLoading,
+    error,
 
-		// Methods
-		logout,
-		refetch,
+    // Methods
+    logout,
+    refetch,
 
-		// Mutation states
-		isLoggingOut: logoutMutation.isPending,
-	};
+    // Mutation states
+    isLoggingOut: logoutMutation.isPending,
+  };
 }
 
 /**
@@ -81,18 +81,18 @@ export function useAuth() {
  * ```
  */
 export function useSession() {
-	const { data, isLoading, error } = trpc.auth.getSession.useQuery(undefined, {
-		retry: 1,
-		refetchOnWindowFocus: false,
-	});
+  const { data, isLoading, error } = trpc.auth.getSession.useQuery(undefined, {
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
 
-	return {
-		user: data?.user || null,
-		session: data?.session || null,
-		isAuthenticated: data?.isAuthenticated || false,
-		isLoading,
-		error,
-	};
+  return {
+    user: data?.user || null,
+    session: data?.session || null,
+    isAuthenticated: data?.isAuthenticated,
+    isLoading,
+    error,
+  };
 }
 
 /**
@@ -113,17 +113,17 @@ export function useSession() {
  * ```
  */
 export function useRequireAuth() {
-	const router = useRouter();
-	const { user, isAuthenticated, isLoading } = useSession();
+  const router = useRouter();
+  const { user, isAuthenticated, isLoading } = useSession();
 
-	// Redirect to login if not authenticated (after loading completes)
-	if (!isLoading && !isAuthenticated) {
-		router.push("/login");
-	}
+  // Redirect to login if not authenticated (after loading completes)
+  if (!(isLoading || isAuthenticated)) {
+    router.push("/login");
+  }
 
-	return {
-		user,
-		isAuthenticated,
-		isLoading,
-	};
+  return {
+    user,
+    isAuthenticated,
+    isLoading,
+  };
 }

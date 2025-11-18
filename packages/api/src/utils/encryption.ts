@@ -19,16 +19,16 @@ const KEY_LENGTH = 32; // 256 bits
  * Key should be set in ENCRYPTION_KEY environment variable
  */
 function getEncryptionKey(): Buffer {
-	const envKey = process.env.ENCRYPTION_KEY || process.env.BETTER_AUTH_SECRET;
+  const envKey = process.env.ENCRYPTION_KEY || process.env.BETTER_AUTH_SECRET;
 
-	if (!envKey) {
-		throw new Error(
-			"ENCRYPTION_KEY or BETTER_AUTH_SECRET must be set in environment variables",
-		);
-	}
+  if (!envKey) {
+    throw new Error(
+      "ENCRYPTION_KEY or BETTER_AUTH_SECRET must be set in environment variables"
+    );
+  }
 
-	// Derive a consistent key from the environment secret
-	return crypto.scryptSync(envKey, "fotomono-encryption", KEY_LENGTH);
+  // Derive a consistent key from the environment secret
+  return crypto.scryptSync(envKey, "fotomono-encryption", KEY_LENGTH);
 }
 
 /**
@@ -45,42 +45,42 @@ function getEncryptionKey(): Buffer {
  * ```
  */
 export function encrypt(plaintext: unknown): string {
-	try {
-		// Convert to JSON string
-		const text = JSON.stringify(plaintext);
+  try {
+    // Convert to JSON string
+    const text = JSON.stringify(plaintext);
 
-		// Generate random initialization vector
-		const iv = crypto.randomBytes(IV_LENGTH);
+    // Generate random initialization vector
+    const iv = crypto.randomBytes(IV_LENGTH);
 
-		// Generate random salt for additional security
-		const salt = crypto.randomBytes(SALT_LENGTH);
+    // Generate random salt for additional security
+    const salt = crypto.randomBytes(SALT_LENGTH);
 
-		// Get encryption key
-		const key = getEncryptionKey();
+    // Get encryption key
+    const key = getEncryptionKey();
 
-		// Create cipher
-		const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+    // Create cipher
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
 
-		// Encrypt the text
-		let encrypted = cipher.update(text, "utf8", "base64");
-		encrypted += cipher.final("base64");
+    // Encrypt the text
+    let encrypted = cipher.update(text, "utf8", "base64");
+    encrypted += cipher.final("base64");
 
-		// Get authentication tag
-		const authTag = cipher.getAuthTag();
+    // Get authentication tag
+    const authTag = cipher.getAuthTag();
 
-		// Combine salt, iv, authTag, and encrypted data
-		// Format: salt:iv:authTag:encryptedData (all base64)
-		return [
-			salt.toString("base64"),
-			iv.toString("base64"),
-			authTag.toString("base64"),
-			encrypted,
-		].join(":");
-	} catch (error) {
-		throw new Error(
-			`Encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-		);
-	}
+    // Combine salt, iv, authTag, and encrypted data
+    // Format: salt:iv:authTag:encryptedData (all base64)
+    return [
+      salt.toString("base64"),
+      iv.toString("base64"),
+      authTag.toString("base64"),
+      encrypted,
+    ].join(":");
+  } catch (error) {
+    throw new Error(
+      `Encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
 
 /**
@@ -97,41 +97,41 @@ export function encrypt(plaintext: unknown): string {
  * ```
  */
 export function decrypt<T = unknown>(encryptedData: string): T {
-	try {
-		// Split the encrypted data
-		const parts = encryptedData.split(":");
+  try {
+    // Split the encrypted data
+    const parts = encryptedData.split(":");
 
-		if (parts.length !== 4) {
-			throw new Error("Invalid encrypted data format");
-		}
+    if (parts.length !== 4) {
+      throw new Error("Invalid encrypted data format");
+    }
 
-		const [saltBase64, ivBase64, authTagBase64, encrypted] = parts;
+    const [saltBase64, ivBase64, authTagBase64, encrypted] = parts;
 
-		// Convert from base64
-		const salt = Buffer.from(saltBase64, "base64");
-		const iv = Buffer.from(ivBase64, "base64");
-		const authTag = Buffer.from(authTagBase64, "base64");
+    // Convert from base64
+    const salt = Buffer.from(saltBase64, "base64");
+    const iv = Buffer.from(ivBase64, "base64");
+    const authTag = Buffer.from(authTagBase64, "base64");
 
-		// Get encryption key
-		const key = getEncryptionKey();
+    // Get encryption key
+    const key = getEncryptionKey();
 
-		// Create decipher
-		const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+    // Create decipher
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
 
-		// Set auth tag
-		decipher.setAuthTag(authTag);
+    // Set auth tag
+    decipher.setAuthTag(authTag);
 
-		// Decrypt
-		let decrypted = decipher.update(encrypted, "base64", "utf8");
-		decrypted += decipher.final("utf8");
+    // Decrypt
+    let decrypted = decipher.update(encrypted, "base64", "utf8");
+    decrypted += decipher.final("utf8");
 
-		// Parse JSON and return
-		return JSON.parse(decrypted) as T;
-	} catch (error) {
-		throw new Error(
-			`Decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-		);
-	}
+    // Parse JSON and return
+    return JSON.parse(decrypted) as T;
+  } catch (error) {
+    throw new Error(
+      `Decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
 }
 
 /**
@@ -148,7 +148,7 @@ export function decrypt<T = unknown>(encryptedData: string): T {
  * ```
  */
 export function hashString(data: string): string {
-	return crypto.createHash("sha256").update(data).digest("hex");
+  return crypto.createHash("sha256").update(data).digest("hex");
 }
 
 /**
@@ -164,7 +164,7 @@ export function hashString(data: string): string {
  * ```
  */
 export function generateToken(length = 32): string {
-	return crypto.randomBytes(length).toString("base64url");
+  return crypto.randomBytes(length).toString("base64url");
 }
 
 /**
@@ -174,47 +174,47 @@ export function generateToken(length = 32): string {
  * @returns true if data can be decrypted, false otherwise
  */
 export function canDecrypt(encryptedData: string): boolean {
-	try {
-		decrypt(encryptedData);
-		return true;
-	} catch {
-		return false;
-	}
+  try {
+    decrypt(encryptedData);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
  * Type-safe storage credential types
  */
 export interface GoogleDriveCredentials {
-	clientId: string;
-	clientSecret: string;
-	refreshToken: string;
-	accessToken?: string;
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+  accessToken?: string;
 }
 
 export interface S3Credentials {
-	accessKeyId: string;
-	secretAccessKey: string;
-	region: string;
-	bucket: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  region: string;
+  bucket: string;
 }
 
 export interface R2Credentials {
-	accountId: string;
-	accessKeyId: string;
-	secretAccessKey: string;
-	bucket: string;
+  accountId: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  bucket: string;
 }
 
 export interface NASCredentials {
-	endpoint: string;
-	username: string;
-	password: string;
-	basePath?: string;
+  endpoint: string;
+  username: string;
+  password: string;
+  basePath?: string;
 }
 
 export type StorageCredentials =
-	| GoogleDriveCredentials
-	| S3Credentials
-	| R2Credentials
-	| NASCredentials;
+  | GoogleDriveCredentials
+  | S3Credentials
+  | R2Credentials
+  | NASCredentials;

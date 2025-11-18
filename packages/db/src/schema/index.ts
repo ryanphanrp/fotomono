@@ -1,11 +1,10 @@
 // Export all schema tables for Drizzle ORM
 
+export * from "./albums";
 // Authentication tables (Better-Auth)
 export * from "./auth";
-
-// Photography business tables
-export * from "./shows";
 export * from "./images";
 export * from "./portfolio";
-export * from "./albums";
+// Photography business tables
+export * from "./shows";
 export * from "./storage";

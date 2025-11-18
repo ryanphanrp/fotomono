@@ -9,11 +9,11 @@
  * Public routes - accessible without authentication
  */
 export const PUBLIC_ROUTES = [
-	"/",
-	"/login",
-	"/register",
-	"/about", // Future
-	"/pricing", // Future
+  "/",
+  "/login",
+  "/register",
+  "/about", // Future
+  "/pricing", // Future
 ] as const;
 
 /**
@@ -27,12 +27,12 @@ export const AUTH_ROUTES = ["/login", "/register"] as const;
  * Unauthenticated users will be redirected to login
  */
 export const PROTECTED_ROUTES = [
-	"/dashboard",
-	"/shows",
-	"/images",
-	"/portfolio",
-	"/albums",
-	"/settings",
+  "/dashboard",
+  "/shows",
+  "/images",
+  "/portfolio",
+  "/albums",
+  "/settings",
 ] as const;
 
 /**
@@ -49,40 +49,47 @@ export const DEFAULT_AUTH_REDIRECT = "/login";
  * Routes that should be excluded from middleware processing
  */
 export const MIDDLEWARE_EXCLUDE_PATTERNS = [
-	"/_next/static",
-	"/_next/image",
-	"/favicon.ico",
-	"/api",
-	"/static",
+  "/_next/static",
+  "/_next/image",
+  "/favicon.ico",
+  "/api",
+  "/static",
 ] as const;
 
 /**
  * Check if a path is a public route
  */
 export function isPublicRoute(pathname: string): boolean {
-	return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  return PUBLIC_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
 }
 
 /**
  * Check if a path is an auth route (login/register)
  */
 export function isAuthRoute(pathname: string): boolean {
-	return AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  return AUTH_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
 }
 
 /**
  * Check if a path is a protected route
  */
 export function isProtectedRoute(pathname: string): boolean {
-	return PROTECTED_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  return PROTECTED_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
 }
 
 /**
  * Check if a path should be excluded from middleware
  */
 export function shouldExcludeFromMiddleware(pathname: string): boolean {
-	return (
-		MIDDLEWARE_EXCLUDE_PATTERNS.some((pattern) => pathname.startsWith(pattern)) ||
-		pathname.includes(".")
-	);
+  return (
+    MIDDLEWARE_EXCLUDE_PATTERNS.some((pattern) =>
+      pathname.startsWith(pattern)
+    ) || pathname.includes(".")
+  );
 }
