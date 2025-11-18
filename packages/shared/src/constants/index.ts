@@ -4,7 +4,7 @@
 
 // API
 export const API_VERSION = "v1" as const;
-export const API_TIMEOUT = 30000; // 30 seconds
+export const API_TIMEOUT = 30_000; // 30 seconds
 
 // Pagination
 export const DEFAULT_PAGE_SIZE = 20;

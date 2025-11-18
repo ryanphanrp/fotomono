@@ -33,6 +33,8 @@
     "better-auth": "catalog:",
     "@fotomono/api": "workspace:*",
     "@fotomono/auth": "workspace:*",
+    "@rp/shared": "workspace:*",
+    "@rp/ui": "workspace:*",
     "react-big-calendar": "^1.15.0",
     "date-fns": "^4.1.0"
   },
