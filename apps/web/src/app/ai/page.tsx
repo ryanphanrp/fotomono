@@ -1,12 +1,11 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
+import { Button, Input } from "@rp/ui";
 import { DefaultChatTransport } from "ai";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Response } from "@/components/response";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export default function AIPage() {
   const [input, setInput] = useState("");

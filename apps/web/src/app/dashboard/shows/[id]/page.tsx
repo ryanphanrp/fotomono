@@ -1,5 +1,6 @@
 "use client";
 
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@rp/ui";
 import {
   Calendar,
   DollarSign,
@@ -11,8 +12,6 @@ import {
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import ShowForm from "@/components/show-form";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { trpc } from "@/utils/trpc";
 
 export default function ShowDetailPage() {
